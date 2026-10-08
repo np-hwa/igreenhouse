@@ -1,0 +1,2375 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>iGreenhouse</title>
+    <style>
+      :root {
+        --bg: #0e1912;
+        --card: #15261b;
+        --card2: #1a2f22;
+        --line: #e6e2d4;
+        --txt: #e7f3ea;
+        --mut: #8fab98;
+        --ok: #4ade80;
+        --warn: #fbbf24;
+        --bad: #f87171;
+        --blue: #60a5fa;
+        --acc: #34d399;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--txt);
+        font:
+          15px/1.45 system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+      }
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--card);
+        position: sticky;
+        top: 0;
+        z-index: 5;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0;
+      }
+      h1 small {
+        font-weight: 400;
+        color: var(--mut);
+        font-size: 13px;
+        margin-left: 6px;
+      }
+      .chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        flex: 1;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        font-size: 12.5px;
+        color: var(--mut);
+        background: var(--card2);
+      }
+      .chip i {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--mut);
+      }
+      .chip.ok i {
+        background: var(--ok);
+      }
+      .chip.bad i {
+        background: var(--bad);
+      }
+      .chip.warn i {
+        background: var(--warn);
+      }
+      .chip.ok {
+        color: var(--txt);
+      }
+      button,
+      select,
+      input {
+        font: inherit;
+        color: var(--txt);
+      }
+      button {
+        background: var(--acc);
+        color: #04210f;
+        border: 0;
+        padding: 7px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button:hover {
+        filter: brightness(1.1);
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        filter: none;
+      }
+      button.ghost {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--txt);
+        font-weight: 500;
+      }
+      button.ghost.on {
+        border-color: var(--warn);
+        color: var(--warn);
+      }
+      button.danger {
+        background: var(--bad);
+        color: #2a0606;
+      }
+      input,
+      select {
+        background: #0c150f;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 6px 8px;
+        min-width: 0;
+      }
+      .banner {
+        margin: 12px 16px 0;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .banner.bad {
+        background: #3a1717;
+        border: 1px solid var(--bad);
+        color: #fecaca;
+      }
+      .banner.warn {
+        background: #3a2d10;
+        border: 1px solid var(--warn);
+        color: #fde68a;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 14px;
+        padding: 14px 16px 30px;
+        max-width: 1300px;
+        margin: 0 auto;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+        min-width: 0;
+      }
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        color: var(--mut);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .c4 {
+        grid-column: span 4;
+      }
+      .c5 {
+        grid-column: span 5;
+      }
+      .c7 {
+        grid-column: span 7;
+      }
+      .c6 {
+        grid-column: span 6;
+      }
+      .c8 {
+        grid-column: span 8;
+      }
+      .c12 {
+        grid-column: span 12;
+      }
+      @media (max-width: 960px) {
+        .c4,
+        .c5,
+        .c6,
+        .c7,
+        .c8 {
+          grid-column: span 12;
+        }
+      }
+      .gauge {
+        width: 100%;
+        max-width: 260px;
+        display: block;
+        margin: 0 auto;
+      }
+      .gauge .bg {
+        fill: none;
+        stroke: #223a2a;
+        stroke-width: 10;
+        stroke-linecap: round;
+      }
+      .gauge .fg {
+        fill: none;
+        stroke-width: 10;
+        stroke-linecap: round;
+        transition:
+          stroke-dasharray 0.6s,
+          stroke 0.3s;
+      }
+      .gauge text {
+        fill: var(--txt);
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .sub {
+        text-align: center;
+        color: var(--mut);
+        font-size: 13px;
+        margin-top: 2px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 12px;
+      }
+      .tile {
+        background: var(--card2);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+      }
+      .tile .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+      .tile b {
+        font-size: 16px;
+      }
+      .pill {
+        font-size: 11.5px;
+        padding: 2px 8px;
+        border-radius: 99px;
+        background: #223a2a;
+        color: var(--mut);
+        font-weight: 700;
+      }
+      .pill.on {
+        background: var(--ok);
+        color: #04210f;
+      }
+      .tile small {
+        color: var(--mut);
+        display: block;
+        margin-bottom: 8px;
+        font-size: 12px;
+      }
+      .seg {
+        display: flex;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .seg button {
+        flex: 1;
+        border-radius: 0;
+        background: transparent;
+        color: var(--mut);
+        font-weight: 500;
+        padding: 6px 4px;
+      }
+      .seg button.sel {
+        background: var(--acc);
+        color: #04210f;
+        font-weight: 700;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .kv {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px 12px;
+        align-items: center;
+      }
+      .kv label {
+        color: var(--mut);
+        font-size: 13px;
+      }
+      .kv input {
+        width: 100%;
+      }
+      #camWrap {
+        position: relative;
+        background: #000;
+        border-radius: 10px;
+        overflow: hidden;
+        aspect-ratio: 4/3;
+        width: 100%;
+      }
+      #camWrap video,
+      #camWrap img,
+      #camWrap canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      #camWrap .ph {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: var(--mut);
+        text-align: center;
+        padding: 12px;
+        font-size: 13px;
+      }
+      .bar {
+        height: 8px;
+        border-radius: 99px;
+        background: #223a2a;
+        overflow: hidden;
+      }
+      .bar > div {
+        height: 100%;
+        width: 0;
+        transition: width 0.4s;
+      }
+      .stat {
+        display: grid;
+        grid-template-columns: 110px 1fr 54px;
+        gap: 8px;
+        align-items: center;
+        font-size: 13px;
+        margin: 6px 0;
+      }
+      .stat span:last-child {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      ul#log,
+      ul#adv {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        max-height: 260px;
+        overflow: auto;
+        font-size: 13px;
+      }
+      ul#log li,
+      ul#adv li {
+        padding: 5px 0;
+        border-bottom: 1px dashed var(--line);
+      }
+      ul#log time {
+        color: var(--mut);
+        margin-right: 6px;
+        font-variant-numeric: tabular-nums;
+      }
+      ul#log li.ok {
+        color: var(--ok);
+      }
+      ul#log li.bad {
+        color: var(--bad);
+      }
+      ul#log li.cmd {
+        color: var(--blue);
+      }
+      ul#adv li::before {
+        content: "💡 ";
+      }
+      canvas#chart {
+        width: 100%;
+        height: 240px;
+        display: block;
+      }
+      .legend {
+        display: flex;
+        gap: 14px;
+        font-size: 12.5px;
+        color: var(--mut);
+        margin-left: auto;
+      }
+      .legend i {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        margin-right: 4px;
+      }
+      dialog {
+        background: var(--card);
+        color: var(--txt);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        max-width: 520px;
+        width: calc(100% - 24px);
+      }
+      dialog::backdrop {
+        background: #000a;
+      }
+      code,
+      pre {
+        background: #0c150f;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 2px 6px;
+        font-size: 12.5px;
+      }
+      pre {
+        padding: 8px;
+        overflow: auto;
+        margin: 6px 0;
+      }
+      .muted {
+        color: var(--mut);
+        font-size: 12.5px;
+      }
+      /* ---------- Toast ---------- */
+      #toastWrap {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+        width: min(340px, calc(100% - 28px));
+      }
+      .toast {
+        pointer-events: auto;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 12px 12px 14px;
+        border-radius: 12px;
+        background: var(--card2);
+        border: 1px solid var(--line);
+        border-left: 5px solid var(--blue);
+        box-shadow: 0 10px 28px #0009;
+        animation: tIn 0.25s ease-out;
+      }
+      .toast.success {
+        border-left-color: var(--ok);
+      }
+      .toast.error {
+        border-left-color: var(--bad);
+      }
+      .toast.warn {
+        border-left-color: var(--warn);
+      }
+      .toast .ti {
+        font-size: 18px;
+        line-height: 1.2;
+      }
+      .toast .tt {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .toast .tm {
+        font-size: 13px;
+        color: var(--mut);
+        margin-top: 1px;
+        word-break: break-word;
+      }
+      .toast .tx {
+        margin-left: auto;
+        background: none;
+        color: var(--mut);
+        padding: 0 4px;
+        font-size: 16px;
+        font-weight: 400;
+      }
+      .toast .tp {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 3px;
+        width: 100%;
+        background: currentColor;
+        opacity: 0.5;
+        transform-origin: left;
+        animation: tBar linear forwards;
+      }
+      .toast.success .tp {
+        color: var(--ok);
+      }
+      .toast.error .tp {
+        color: var(--bad);
+      }
+      .toast.warn .tp {
+        color: var(--warn);
+      }
+      .toast.info .tp {
+        color: var(--blue);
+      }
+      .toast.out {
+        animation: tOut 0.2s ease-in forwards;
+      }
+      @keyframes tIn {
+        from {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes tOut {
+        to {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+      }
+      @keyframes tBar {
+        to {
+          transform: scaleX(0);
+        }
+      }
+      @media (max-width: 480px) {
+        #toastWrap {
+          top: auto;
+          bottom: 14px;
+          right: 14px;
+          left: 14px;
+          width: auto;
+        }
+      }
+      /* ---------- Hộp thoại mở cửa ---------- */
+      #doorDlg {
+        max-width: 400px;
+      }
+      #doorDlg .big {
+        font-size: 42px;
+        text-align: center;
+        margin: 0;
+      }
+      #doorDlg input {
+        font-size: 22px;
+        letter-spacing: 0.4em;
+        text-align: center;
+        width: 100%;
+      }
+      #doorErr {
+        color: var(--bad);
+        font-size: 13px;
+        min-height: 18px;
+        text-align: center;
+      }
+      /* ---------- Ảnh sự kiện · time-lapse ---------- */
+      .gal {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        max-height: 420px;
+        overflow: auto;
+      }
+      .shot {
+        background: var(--card2);
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--blue);
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+      }
+      .shot.ok {
+        border-left-color: var(--ok);
+      }
+      .shot.bad {
+        border-left-color: var(--bad);
+      }
+      .shot.warn {
+        border-left-color: var(--warn);
+      }
+      .shot img {
+        width: 100%;
+        display: block;
+        background: #000;
+      }
+      .shot > div {
+        padding: 6px 8px;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+      .tlbox {
+        display: grid;
+        grid-template-columns: 1fr 280px;
+        gap: 14px;
+      }
+      @media (max-width: 960px) {
+        .tlbox {
+          grid-template-columns: 1fr;
+        }
+      }
+      canvas#grow {
+        width: 100%;
+        height: 230px;
+        display: block;
+      }
+      #tlImg {
+        width: 100%;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        background: #000;
+        border-radius: 10px;
+        display: block;
+      }
+      #phDlg {
+        max-width: 680px;
+      }
+      #phDlg img {
+        width: 100%;
+        border-radius: 8px;
+        display: block;
+      }
+      #camWrap {
+        touch-action: none;
+      }
+
+      /* ===== Giao diện kiểu MOW Garden ===== */
+      :root {
+        --bg: #fbf9f2;
+        --card: #fff;
+        --card2: #f5f2e9;
+        --line: #e6e2d4;
+        --txt: #22332b;
+        --mut: #6b7a70;
+        --ok: #2e8b57;
+        --warn: #e09b00;
+        --bad: #d64545;
+        --blue: #2f7fc1;
+        --acc: #22453a;
+        --dk: #22453a;
+        --cream: #fefbf3;
+        --zalo: #0b8a4b;
+        --hero-img: url("3.jpg");
+      }
+      body {
+        background: var(--bg);
+        color: var(--txt);
+        font-family: "Quicksand", "Segoe UI", system-ui, sans-serif;
+        font-weight: 500;
+      }
+      .topbar {
+        background: var(--dk);
+        color: #e9f1ec;
+        font-size: 13px;
+        padding: 10px 0;
+      }
+      .topbar .in {
+        max-width: 1300px;
+        margin: auto;
+        padding: 0 16px;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      header {
+        background: var(--cream);
+        border-bottom: 1px solid #eee8d8;
+        padding: 16px;
+      }
+      h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--dk);
+      }
+      .nav {
+        display: flex;
+        gap: 26px;
+        flex-wrap: wrap;
+      }
+      .nav a {
+        color: var(--dk);
+        text-decoration: none;
+        font-size: 17px;
+        font-weight: 600;
+      }
+      .nav a:hover {
+        color: var(--ok);
+      }
+      .chip {
+        background: var(--card2);
+      }
+      button,
+      .pill.on,
+      .seg button.sel,
+      .tag.ok,
+      .tag.bad,
+      button.danger {
+        color: #fff;
+      }
+      button {
+        border-radius: 99px;
+        padding: 8px 18px;
+        font-weight: 700;
+      }
+      button.ghost {
+        background: transparent;
+        color: var(--dk);
+        border: 2px solid var(--dk);
+      }
+      button.ghost:hover {
+        background: var(--dk);
+        color: #fff;
+      }
+      .tag.warn {
+        color: #2a1d00;
+      }
+      .tag {
+        background: #ece8da;
+      }
+      .pill {
+        background: #ece8da;
+        color: var(--mut);
+      }
+      input,
+      select {
+        background: #fff;
+        color: var(--txt);
+        border: 1px solid var(--line);
+      }
+      code,
+      pre {
+        background: var(--card2);
+        color: var(--txt);
+      }
+      .card {
+        border-radius: 16px;
+        box-shadow: 0 4px 18px #22453a12;
+      }
+      .card h2 {
+        color: var(--dk);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 15px;
+        text-align: center;
+        margin-bottom: 16px;
+      }
+      .card h2::after {
+        content: "";
+        display: block;
+        width: 36px;
+        height: 3px;
+        background: var(--ok);
+        border-radius: 2px;
+        margin: 8px auto 0;
+      }
+      .tile,
+      .chk,
+      .shot {
+        background: #fff;
+        border-radius: 14px;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+      .tile:hover,
+      .chk:hover,
+      .shot:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 24px #22453a22;
+      }
+      .seg {
+        border-radius: 99px;
+        border: 2px solid var(--dk);
+      }
+      .seg button {
+        border-radius: 0;
+        background: #fff;
+        color: var(--dk);
+      }
+      .gauge .bg {
+        stroke: #e8e4d6;
+      }
+      .bar {
+        background: #e8e4d6;
+      }
+      .banner.bad {
+        background: #fdecec;
+        color: #8a1c1c;
+      }
+      .banner.warn {
+        background: #fff6dd;
+        color: #7a5200;
+      }
+      .hero {
+        min-height: 420px;
+        background: var(--hero-img) center/cover;
+        display: flex;
+        align-items: center;
+      }
+      .hero .box {
+        background: #ffffffc4;
+        margin: 40px 0 40px 8%;
+        padding: 34px 44px;
+        max-width: min(760px, 86%);
+      }
+      .hero h2 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 700;
+        font-size: 30px;
+        color: var(--dk);
+        margin: 0 0 14px;
+      }
+      .hero p {
+        margin: 0 0 22px;
+        font-size: 17px;
+        line-height: 1.7;
+        color: #33463c;
+      }
+      a.btn {
+        display: inline-block;
+        padding: 10px 28px;
+        border-radius: 99px;
+        font-weight: 700;
+        text-transform: uppercase;
+        text-decoration: none;
+        background: var(--dk);
+        color: #fff;
+        border: 2px solid var(--dk);
+        margin: 4px 10px 4px 0;
+      }
+      a.btn.out {
+        background: transparent;
+        color: var(--dk);
+      }
+      .why {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 6px 16px 10px;
+      }
+      .why h2 {
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 17px;
+        color: var(--dk);
+      }
+      .why .g {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 14px;
+      }
+      .why .g > div {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+        text-align: center;
+      }
+      .why .e {
+        font-size: 30px;
+      }
+      .why b {
+        display: block;
+        text-transform: uppercase;
+        font-size: 13px;
+        color: var(--dk);
+        margin-top: 6px;
+      }
+      .why p {
+        margin: 4px 0 0;
+        font-size: 12.5px;
+        color: var(--mut);
+      }
+      footer.ft {
+        background: var(--dk);
+        color: #dcefd8;
+        margin-top: 20px;
+        padding: 26px 16px;
+      }
+      .ft .in {
+        max-width: 1300px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        font-size: 13px;
+      }
+      .ft b {
+        display: block;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .fab {
+        position: fixed;
+        right: 22px;
+        bottom: 22px;
+        width: 58px;
+        height: 58px;
+        padding: 0;
+        border-radius: 50%;
+        background: var(--zalo);
+        font-size: 24px;
+        border: 4px solid #ffffffcc;
+        box-shadow: 0 8px 22px #0b8a4b66;
+        z-index: 50;
+      }
+      /* Gợi ý + Nhật ký: nhật ký tự giãn lấp đầy chiều cao thẻ, không còn khoảng trống */
+      .sideCard { display: flex; flex-direction: column; }
+      .sideCard #adv { flex: 0 0 auto; max-height: 200px; }
+      .sideCard #log { flex: 1 1 0; min-height: 240px; max-height: none; }
+
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="toastWrap" aria-live="polite"></div>
+
+    <dialog id="doorDlg">
+      <form id="doorFrm" class="stack">
+        <p class="big">🔓</p>
+        <h2
+          style="
+            margin: 0;
+            color: var(--txt);
+            font-size: 18px;
+            text-align: center;
+            text-transform: none;
+          "
+        >
+          Mở cửa nhà kính từ xa?
+        </h2>
+        <p class="muted" style="text-align: center; margin: 0">
+          Cửa sẽ mở khoảng 5 giây rồi tự khóa lại.
+        </p>
+        <div id="doorPinRow">
+          <input
+            id="doorPin"
+            type="password"
+            inputmode="numeric"
+            autocomplete="off"
+            maxlength="12"
+            placeholder="Nhập mã PIN"
+            required
+          />
+          <div id="doorErr"></div>
+        </div>
+        <div class="row" style="justify-content: flex-end">
+          <button type="button" class="ghost" id="doorCancel">Hủy</button>
+          <button type="submit">Mở cửa</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="phDlg">
+      <form method="dialog" class="stack">
+        <img id="phBig" alt="" />
+        <div class="muted" id="phCap"></div>
+        <div class="row" style="justify-content: flex-end">
+          <button>Đóng</button>
+        </div>
+      </form>
+    </dialog>
+    <header>
+      <h1>🌱 iGreenhouse</h1>
+      <div class="chips">
+        <span class="chip" id="chBroker"><i></i><span>Broker: —</span></span>
+        <span class="chip" id="chDev"><i></i><span>Thiết bị: —</span></span>
+        <span class="chip" id="chLast"><span>Cập nhật: —</span></span>
+        <span class="chip" id="chRssi"><span>WiFi: —</span></span>
+      </div>
+      <div class="row">
+        <button class="ghost" id="btnDemo">Chế độ demo</button
+        ><button class="ghost" id="btnSet">⚙ Cài đặt</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="box">
+        <h2>Nature is the art God</h2>
+        <p>
+          Theo dõi nhiệt độ, độ ẩm đất, mực nước và điều khiển quạt, đèn, máy
+          bơm, cửa từ xa ngay trên trang web để cây luôn khỏe mạnh.
+        </p>
+        <a class="btn out" href="#chart">Xem lịch sử</a
+        ><a class="btn" href="#tiles">Camera</a>
+      </div>
+    </section>
+    <div id="waterBanner" class="banner warn" hidden>
+      🚰 <b>BỂ NƯỚC SẮP HẾT</b> — <span id="waterBannerTxt"></span>. Hãy cấp
+      thêm nước cho bể của máy bơm.
+    </div>
+    <div id="stopBanner" class="banner bad" hidden>
+      ĐANG DỪNG KHẨN CẤP — quạt, đèn và bơm bị khóa tắt. Bấm “Cho chạy lại” để mở
+      khóa.
+    </div>
+
+    <main class="grid">
+      <section class="card c4">
+        <h2>Nhiệt độ</h2>
+        <svg class="gauge" viewBox="0 0 120 72">
+          <path class="bg" d="M10 62 A50 50 0 0 1 110 62" pathLength="100" />
+          <path
+            id="gT"
+            class="fg"
+            d="M10 62 A50 50 0 0 1 110 62"
+            pathLength="100"
+            stroke="#4ade80"
+            stroke-dasharray="0 100"
+          />
+          <text id="gTv" x="60" y="58" text-anchor="middle">--</text>
+        </svg>
+        <div class="sub" id="tSub">Quạt bật khi &gt; —°C</div>
+      </section>
+      <section class="card c4">
+        <h2>Độ ẩm đất</h2>
+        <svg class="gauge" viewBox="0 0 120 72">
+          <path class="bg" d="M10 62 A50 50 0 0 1 110 62" pathLength="100" />
+          <path
+            id="gS"
+            class="fg"
+            d="M10 62 A50 50 0 0 1 110 62"
+            pathLength="100"
+            stroke="#60a5fa"
+            stroke-dasharray="0 100"
+          />
+          <text id="gSv" x="60" y="58" text-anchor="middle">--</text>
+        </svg>
+        <div class="sub" id="sSub">Bơm khi &lt; —% · tắt khi &gt; —%</div>
+      </section>
+      <section class="card c4">
+        <h2>Cửa &amp; an toàn</h2>
+        <div class="stack">
+          <div class="row" style="justify-content: space-between">
+            <b id="doorTxt">Cửa: —</b><span class="muted" id="rawTxt"></span>
+          </div>
+          <button id="btnDoor">Mở cửa từ xa</button>
+          <div class="row">
+            <button
+              class="danger"
+              data-cmd="all:stop"
+              data-label="DỪNG KHẨN CẤP"
+            >
+              Dừng khẩn cấp
+            </button>
+            <button class="ghost" data-cmd="all:run" data-label="Cho chạy lại">
+              ▶ Cho chạy lại
+            </button>
+          </div>
+          <div class="row">
+            <button class="ghost" data-cmd="read" data-label="Đo ngay">
+              ↻ Đo ngay
+            </button>
+            <button
+              class="ghost"
+              data-cmd="all:auto"
+              data-label="Tự động toàn bộ"
+            >
+              ⚙ Tự động tất cả
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card c7">
+        <h2>Thiết bị</h2>
+        <div class="tiles" id="tiles"></div>
+        <p class="muted" style="margin: 10px 0 0">
+          “Tự động” chạy theo ngưỡng. “Bật/Tắt” ép thủ công. Máy bơm luôn tự
+          ngắt sau 60 giây để tránh tràn nước.
+        </p>
+      </section>
+      <section class="card c5">
+        <h2>Ngưỡng điều khiển</h2>
+        <div class="kv">
+          <label>Nhiệt độ quạt (°C)</label
+          ><input id="inTemp" type="number" min="10" max="50" />
+          <label>Bật bơm khi đất &lt; (%)</label
+          ><input id="inOn" type="number" min="0" max="100" />
+          <label>Tắt bơm khi đất &gt; (%)</label
+          ><input id="inOff" type="number" min="0" max="100" />
+          <label>Công suất bơm (%)</label
+          ><input id="inPump" type="number" min="20" max="100" />
+        </div>
+        <div class="row" style="margin-top: 10px">
+          <button id="btnApply">Áp dụng</button>
+        </div>
+        <p class="muted" style="margin: 8px 0 0">
+          Ngưỡng được lưu trong RAM của ESP32, mất khi khởi động lại.
+        </p>
+      </section>
+
+      <section class="card c7">
+        <h2>Camera cửa · nhận diện người</h2>
+        <div
+          id="camAlert"
+          class="banner warn"
+          style="margin: 0 0 10px"
+          hidden
+        ></div>
+        <div class="row" style="margin-bottom: 10px">
+          <select id="camSrc">
+            <option value="webcam">Webcam</option>
+            <option value="url">URL ESP32-CAM / MJPEG</option>
+          </select>
+          <select id="camDev" title="Chọn camera"></select>
+          <input
+            id="camUrl"
+            placeholder="http://192.168.1.50:81/stream"
+            style="flex: 1; min-width: 180px"
+            hidden
+          />
+          <button id="btnCam">▶ Bật camera</button>
+        </div>
+        <div id="camWrap">
+          <video id="cam" playsinline muted hidden></video>
+          <img id="camImg" alt="" hidden />
+          <canvas id="camOv"></canvas>
+          <div class="ph" id="camMsg">
+            Camera đang tắt. Webcam cần HTTPS hoặc localhost.
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px; justify-content: space-between">
+          <div><span class="muted">Số người đang thấy</span> <b id="vPersons" style="font-size: 30px; color: var(--dk)">0</b></div>
+          <span class="muted" id="aiState">Chưa tải mô hình</span>
+        </div>
+        <p class="muted" style="margin: 6px 0 0">Camera chỉ dùng để nhận diện người ở cửa và tự chụp ảnh khi thấy người. Xử lý ngay trong trình duyệt, hình ảnh không gửi đi đâu.</p>
+      </section>
+      <section class="card c5 sideCard">
+        <h2>Gợi ý thông minh</h2>
+        <ul id="adv">
+          <li>Đang chờ dữ liệu…</li>
+        </ul>
+        <h2 style="margin-top: 16px">Nhật ký sự kiện</h2>
+        <ul id="log"></ul>
+      </section>
+
+      <section class="card c12">
+        <h2>Ảnh người phát hiện</h2>
+        <div class="row" style="margin-bottom: 10px">
+          <button class="ghost" id="phClear">Xóa ảnh</button>
+          <span class="muted" id="phInfo"></span>
+        </div>
+        <div class="gal" id="gal"></div>
+      </section>
+
+      <section class="card c12">
+        <div class="row" style="margin-bottom: 8px">
+          <h2 style="margin: 0">Lịch sử</h2>
+          <select id="rng">
+            <option value="60">1 giờ</option>
+            <option value="360">6 giờ</option>
+            <option value="1440" selected>24 giờ</option>
+            <option value="0">Tất cả</option>
+          </select>
+          <button class="ghost" id="btnClear">Xóa lịch sử</button>
+          <div class="legend">
+            <span><i style="background: #fb923c"></i>Nhiệt độ (°C)</span
+            ><span><i style="background: #60a5fa"></i>Độ ẩm đất (%)</span>
+          </div>
+        </div>
+        <canvas id="chart"></canvas>
+      </section>
+    </main>
+    <footer class="ft">
+      <div class="in">
+        <div>
+          <b>iGreenhouse</b>Nhóm 5 - Đặng Hoàng Hải, Nguyễn Phương Hoa, Nguyễn
+          Diệu Thảo
+        </div>
+        <div>
+          <b>Công nghệ</b>ESP32 · MQTT (HiveMQ) · RFID RC522 · OLED/LCD · Webcam
+        </div>
+        <div>
+          <b>Lưu ý</b>Cấu hình và ảnh được lưu ngay trong trình duyệt của bạn.
+        </div>
+      </div>
+    </footer>
+    
+
+    <dialog id="dlg">
+      <form method="dialog" id="frm" class="stack">
+        <h2
+          style="
+            margin: 0;
+            color: var(--txt);
+            font-size: 18px;
+            text-transform: none;
+          "
+        >
+          ⚙ Cài đặt kết nối
+        </h2>
+        <div class="kv">
+          <label>Broker (WebSocket)</label><input id="cBroker" />
+          <label>Topic prefix</label><input id="cPrefix" />
+        </div>
+        <p class="muted">
+          Dán dòng sau vào firmware rồi nạp lại ESP32 (mã PIN mở cửa đặt riêng
+          trong firmware, <code>DOOR_PIN_CODE</code>):
+        </p>
+        <pre id="snippet"></pre>
+        <p class="muted">
+          Broker công cộng ai cũng đọc được nếu biết prefix. Hãy giữ prefix ngẫu
+          nhiên, khó đoán; dùng HiveMQ Cloud/EMQX có tài khoản nếu triển khai
+          thật.
+        </p>
+        <div class="row" style="justify-content: flex-end">
+          <button type="button" class="ghost" id="btnCopy">Sao chép</button>
+          <button type="button" class="ghost" id="btnCancel">Đóng</button>
+          <button type="submit" id="btnSave">Lưu &amp; kết nối</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js"></script>
+    <script>
+      (() => {
+        "use strict";
+        const $ = (s, r = document) => r.querySelector(s);
+        const rand = () => Math.random().toString(36).slice(2, 8);
+        const LS_CFG = "igh.cfg.v1",
+          LS_HIST = "igh.hist.v1";
+        const TFJS =
+          "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js";
+        const COCO =
+          "https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js";
+
+        /* ---------- Cấu hình ---------- */
+        let saved = null;
+        try {
+          saved = JSON.parse(localStorage.getItem(LS_CFG));
+        } catch (e) {}
+        const cfg = Object.assign(
+          {
+            broker: "wss://broker.hivemq.com:8884/mqtt",
+            prefix: "igreenhouse/hwa-" + rand() + rand(),
+          },
+          saved || {},
+        );
+        delete cfg.pin; // xóa PIN cũ nếu trước đây đã lưu trong localStorage
+        const firstRun = !saved;
+        const saveCfg = () => {
+          try {
+            localStorage.setItem(LS_CFG, JSON.stringify(cfg));
+          } catch (e) {}
+        };
+        saveCfg();
+        const topic = (s) => cfg.prefix.replace(/\/+$/, "") + "/" + s;
+
+        /* ---------- Trạng thái ---------- */
+        let st = null,
+          devOnline = false,
+          lastTs = 0,
+          demo = false,
+          client = null,
+          lastAuth = 0,
+          simTimer = null;
+        let hist = [];
+        try {
+          hist = JSON.parse(localStorage.getItem(LS_HIST) || "[]");
+        } catch (e) {}
+        let histDemo = [];
+        const H = () => (demo ? histDemo : hist);
+        const plant = { green: 0, yellow: 0, valid: 0 };
+
+        /* ---------- Tiện ích UI ---------- */
+        function log(msg, cls = "") {
+          const li = document.createElement("li");
+          li.className = cls;
+          const t = document.createElement("time");
+          t.textContent = new Date().toLocaleTimeString("vi-VN");
+          li.appendChild(t);
+          li.appendChild(document.createTextNode(msg));
+          const ul = $("#log");
+          ul.prepend(li);
+          while (ul.children.length > 100) ul.lastChild.remove();
+        }
+        function chip(id, cls, text) {
+          const c = $(id);
+          c.className = "chip " + cls;
+          c.querySelector("span").textContent = text;
+        }
+        const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+        const ICONS = { success: "✅", error: "⛔", warn: "⚠️", info: "ℹ️" };
+        function toast(type, title, msg = "", ms = 4500) {
+          const wrap = $("#toastWrap");
+          while (wrap.children.length >= 4) wrap.firstChild.remove();
+          const el = document.createElement("div");
+          el.className = "toast " + type;
+          el.innerHTML =
+            '<span class="ti"></span><div><div class="tt"></div><div class="tm"></div></div><button class="tx" aria-label="Đóng">✕</button><div class="tp"></div>';
+          el.querySelector(".ti").textContent = ICONS[type] || ICONS.info;
+          el.querySelector(".tt").textContent = title;
+          el.querySelector(".tm").textContent = msg;
+          el.querySelector(".tp").style.animationDuration = ms + "ms";
+          const close = () => {
+            if (el.classList.contains("out")) return;
+            el.classList.add("out");
+            setTimeout(() => el.remove(), 200);
+          };
+          el.querySelector(".tx").onclick = close;
+          wrap.appendChild(el);
+          setTimeout(close, ms);
+        }
+
+        /* ---------- MQTT ---------- */
+        function connect() {
+          if (client) {
+            try {
+              client.end(true);
+            } catch (e) {}
+            client = null;
+          }
+          if (demo) return;
+          if (typeof mqtt === "undefined") {
+            chip("#chBroker", "bad", "Broker: không tải được thư viện MQTT");
+            return;
+          }
+          chip("#chBroker", "warn", "Broker: đang kết nối…");
+          try {
+            client = mqtt.connect(cfg.broker, {
+              clientId: "web-" + rand() + rand(),
+              reconnectPeriod: 3000,
+              connectTimeout: 8000,
+              clean: true,
+            });
+          } catch (e) {
+            chip("#chBroker", "bad", "Broker: URL không hợp lệ");
+            return;
+          }
+          client.on("connect", () => {
+            chip("#chBroker", "ok", "Broker: đã kết nối");
+            client.subscribe([
+              topic("telemetry"),
+              topic("status"),
+              topic("event"),
+            ]);
+            log("Đã kết nối broker", "ok");
+            client.publish(topic("cmd"), "read"); // yêu cầu ESP32 đo ngay, khỏi chờ chu kỳ
+          });
+          client.on("reconnect", () =>
+            chip("#chBroker", "warn", "Broker: kết nối lại…"),
+          );
+          client.on("close", () => {
+            chip("#chBroker", "bad", "Broker: mất kết nối");
+            devOnline = false;
+            render();
+          });
+          client.on("error", (e) =>
+            log("Lỗi MQTT: " + ((e && e.message) || e), "bad"),
+          );
+          client.on("message", (t, m) => onMsg(t, m.toString()));
+        }
+        function onMsg(t, txt) {
+          const k = t.split("/").pop();
+          if (k === "telemetry") {
+            try {
+              onTelemetry(JSON.parse(txt));
+            } catch (e) {}
+          } else if (k === "status") {
+            const on = txt === "online";
+            if (on !== devOnline)
+              log(on ? "ESP32 online" : "ESP32 offline", on ? "ok" : "bad");
+            devOnline = on;
+            render();
+          } else if (k === "event") {
+            try {
+              onEvent(JSON.parse(txt));
+            } catch (e) {}
+          }
+        }
+        function onEvent(j) {
+          eventHook(j);
+          if (j.type === "card") {
+            log(
+              `Quẹt thẻ ${j.uid} — ${j.ok ? "HỢP LỆ" : "KHÔNG HỢP LỆ"}`,
+              j.ok ? "ok" : "bad",
+            );
+            if (j.ok) lastAuth = Date.now();
+            toast(
+              j.ok ? "success" : "error",
+              j.ok ? "Thẻ hợp lệ" : "Thẻ không hợp lệ",
+              "UID: " + j.uid,
+            );
+          } else if (j.type === "door") {
+            clearTimeout(doorWait);
+            log(
+              j.state === "open"
+                ? `Cửa mở (${j.by === "remote" ? "từ xa" : "bằng thẻ"})`
+                : "Cửa đã khóa lại",
+              j.state === "open" ? "ok" : "",
+            );
+            if (j.state === "open") {
+              lastAuth = Date.now();
+              toast(
+                "success",
+                "Cửa đã mở",
+                (j.by === "remote" ? "Mở từ xa qua web" : "Mở bằng thẻ từ") + peopleTxt(),
+              );
+            } else toast("info", "Cửa đã khóa lại");
+          } else if (j.type === "pin_denied") {
+            clearTimeout(doorWait);
+            log("Sai PIN mở cửa từ xa!", "bad");
+            toast(
+              "error",
+              "Sai mã PIN",
+              "Cửa không được mở. Hãy nhập lại mã PIN.",
+              6000,
+            );
+            clearTimeout(doorWait);
+            toast("warn", "Cửa đang hoạt động", "Thử lại sau vài giây");
+          } else if (j.type === "water") {
+            log(
+              j.low
+                ? `CẢNH BÁO: bể nước chỉ còn ${j.pct}% — cần cấp thêm nước`
+                : `Đã cấp nước, mực nước ${j.pct}%`,
+              j.low ? "bad" : "ok",
+            );
+            if (j.low)
+              toast("warn", "Bể nước sắp hết", `Mực nước còn ${j.pct}%`, 7000);
+            else toast("success", "Đã cấp nước", `Mực nước ${j.pct}%`);
+          }
+        }
+        function send(cmd, label) {
+          const shown = cmd.startsWith("door:open") ? "door:open" : cmd;
+          if (demo) {
+            simCmd(cmd);
+            log("→ " + (label || shown) + " (demo)", "cmd");
+            return true;
+          }
+          if (!client || !client.connected) {
+            log(
+              "Chưa kết nối broker, không gửi được: " + (label || shown),
+              "bad",
+            );
+            return false;
+          }
+          client.publish(topic("cmd"), cmd);
+          log("→ " + (label || shown), "cmd");
+          return true;
+        }
+        function onTelemetry(j) {
+          st = j;
+          lastTs = Date.now();
+          const now = Date.now(),
+            arr = H(),
+            gap = demo ? 1500 : 60000;
+          if (arr.length === 0 || now - arr[arr.length - 1].ts >= gap) {
+            arr.push({ ts: now, t: j.t, soil: j.soil });
+            while (arr.length > 1440) arr.shift();
+            if (!demo) {
+              try {
+                localStorage.setItem(LS_HIST, JSON.stringify(arr));
+              } catch (e) {}
+            }
+            drawChart();
+          }
+          extraOnTelemetry(j);
+          render();
+        }
+
+        /* ---------- Hiển thị ---------- */
+        const DEV = [
+          {
+            k: "led",
+            key: "ovLed",
+            n: "Đèn",
+            ic: "💡",
+            note: "Báo/sưởi khi nhiệt độ thấp",
+          },
+          {
+            k: "fan",
+            key: "ovFan",
+            n: "Quạt",
+            ic: "🌀",
+            note: "Bật khi nhiệt độ vượt ngưỡng",
+          },
+          {
+            k: "pump",
+            key: "ovPump",
+            n: "Máy bơm",
+            ic: "💧",
+            note: "Bơm khi đất khô, tối đa 60 giây",
+          },
+        ];
+        const DOORTXT = ["Đóng", "Cấp nguồn…", "Đang mở", "Đang khóa…"];
+        function setGauge(path, txtEl, pct, color, text) {
+          $(path).setAttribute("stroke-dasharray", clamp(pct, 0, 100) + " 100");
+          $(path).setAttribute("stroke", color);
+          $(txtEl).textContent = text;
+        }
+        function render() {
+          const s = st,
+            can = demo || devOnline;
+          chip(
+            "#chDev",
+            can ? "ok" : client && client.connected ? "bad" : "warn",
+            demo
+              ? "Thiết bị: DEMO"
+              : "Thiết bị: " + (devOnline ? "online" : "offline"),
+          );
+          const age = lastTs ? Math.round((Date.now() - lastTs) / 1000) : null;
+          $("#chLast span").textContent =
+            "Cập nhật: " + (age == null ? "—" : age + " giây trước");
+          $("#chRssi span").textContent =
+            "WiFi: " + (s && s.rssi ? s.rssi + " dBm" : "—");
+          $("#stopBanner").hidden = !(s && s.stop);
+          const hasWater = !!(s && s.water != null);
+          $("#waterBanner").hidden = !(hasWater && s.wlow);
+          if (hasWater)
+            $("#waterBannerTxt").textContent = "mực nước còn " + (s.wb ? "≤ " : "") + s.water + "% (cảm biến không đo được phần đáy bể)";
+          if (!s) {
+            setGauge("#gT", "#gTv", 0, "#4ade80", "--");
+            setGauge("#gS", "#gSv", 0, "#60a5fa", "--");
+          } else {
+            const t = s.t;
+            if (t == null) setGauge("#gT", "#gTv", 0, "#8fab98", "--");
+            else
+              setGauge(
+                "#gT",
+                "#gTv",
+                (t / 50) * 100,
+                t > s.tl ? "#f87171" : t < s.tl - 1 ? "#60a5fa" : "#4ade80",
+                t.toFixed(1) + "°C",
+              );
+            setGauge(
+              "#gS",
+              "#gSv",
+              s.soil,
+              s.soil < s.so ? "#fbbf24" : s.soil > s.sf ? "#60a5fa" : "#4ade80",
+              s.soil + "%",
+            );
+            $("#tSub").textContent = `Quạt bật khi > ${s.tl}°C`;
+            $("#sSub").textContent = `Bơm khi < ${s.so}% · tắt khi > ${s.sf}%`;
+            $("#doorTxt").textContent = "Cửa: " + (DOORTXT[s.door] || "—") + (cam.on ? " · " + cam.persons + " người" : "");
+            if (s.ok === 0)
+              $("#sSub").textContent += " · chưa có số đo đầu tiên";
+            for (const [id, v] of [
+              ["#inTemp", s.tl],
+              ["#inOn", s.so],
+              ["#inOff", s.sf],
+              ["#inPump", s.ps],
+            ]) {
+              const el = $(id);
+              if (document.activeElement !== el) el.value = v;
+            }
+          }
+          $("#btnDoor").disabled = !can || !!(s && s.door !== 0);
+          document
+            .querySelectorAll("[data-cmd]")
+            .forEach((b) => (b.disabled = !can));
+          $("#btnApply").disabled = !can;
+          // thẻ thiết bị
+          const tiles = $("#tiles");
+          tiles.innerHTML = "";
+          for (const d of DEV) {
+            const on = s ? s[d.k] === 1 : false,
+              ov = s ? s[d.key] : -1,
+              lock = !can || !!(s && s.stop);
+            const div = document.createElement("div");
+            div.className = "tile";
+            div.innerHTML = `<div class="top"><b>${d.ic} ${d.n}</b><span class="pill ${on ? "on" : ""}">${on ? "ĐANG BẬT" : "TẮT"}</span></div><small>${d.note}</small><div class="seg"></div>`;
+            const seg = div.querySelector(".seg");
+            [
+              ["auto", "Tự động", -1],
+              ["1", "Bật", 1],
+              ["0", "Tắt", 0],
+            ].forEach(([v, l, n]) => {
+              const b = document.createElement("button");
+              b.textContent = l;
+              b.className = ov === n ? "sel" : "";
+              b.disabled = lock;
+              b.dataset.cmd = `${d.k}:${v}`;
+              b.dataset.label = `${d.n}: ${l}`;
+              seg.appendChild(b);
+            });
+            tiles.appendChild(div);
+          }
+          if (hasWater) {
+            // thẻ mực nước bể bơm (chỉ hiện khi firmware có gửi water)
+            const low = !!s.wlow,
+              div = document.createElement("div");
+            div.className = "tile";
+            div.innerHTML = `<div class="top"><b>🚰 Bể nước bơm</b><span class="pill ${low ? "" : "on"}" style="${low ? "background:var(--warn);color:#2a1d00" : ""}">${low ? "SẮP HẾT" : "ĐỦ NƯỚC"}</span></div><small>Cảnh báo khi ≤ 30%, hết cảnh báo khi ≥ 40%</small><div class="bar"><div style="width:${clamp(s.water, 0, 100)}%;background:${low ? "var(--warn)" : "var(--blue)"}"></div></div><div class="muted" style="margin-top:6px">${s.wb ? "≤ " : ""}${s.water}%${s.wb ? " · nước dưới cảm biến" : ""}</div>`;
+            tiles.appendChild(div);
+          }
+          renderAdvice();
+        }
+
+        /* ---------- Gợi ý (luật đơn giản) ---------- */
+        function renderAdvice() {
+          const a = [],
+            s = st;
+          if (s) {
+            if (s.wlow)
+              a.push(
+                `Bể nước của máy bơm còn ${s.wb ? "≤ " : ""}${s.water}%: hãy cấp thêm nước ngay để bơm không chạy khô.`,
+              );
+            if (s.stop)
+              a.push(
+                "Đang dừng khẩn cấp: quạt, đèn và bơm bị khóa. Kiểm tra sự cố rồi bấm “Cho chạy lại”.",
+              );
+            if (s.t != null && s.t > s.tl + 5)
+              a.push(
+                `Nhiệt độ ${s.t.toFixed(1)}°C cao hơn ngưỡng ${s.tl}°C đáng kể — kiểm tra quạt/thông gió, cân nhắc che nắng.`,
+              );
+            if (s.soil < s.so && !s.pump && !s.stop)
+              a.push(
+                `Đất khô (${s.soil}%) nhưng bơm đang tắt${s.ovPump === 0 ? " do bạn ép tắt" : ""}.`,
+              );
+            if (s.ovPump === 1 && !s.pump && !s.stop)
+              a.push(
+                "Bơm đã tự ngắt sau giới hạn 60 giây. Chuyển “Tự động” rồi “Bật” lại nếu cần tưới tiếp.",
+              );
+            if (s.soil > s.sf + 25)
+              a.push(
+                `Đất rất ẩm (${s.soil}%) — tránh tưới thêm, kiểm tra thoát nước.`,
+              );
+            if (plant.valid > 10 && plant.yellow > 10)
+              a.push(
+                s.soil < s.so
+                  ? "Lá có dấu hiệu úa kèm đất khô: ưu tiên tưới nước."
+                  : "Có vùng vàng/úa dù đất đủ ẩm: kiểm tra dinh dưỡng, ánh sáng, sâu bệnh.",
+              );
+            if (plant.valid > 10 && plant.green < 8)
+              a.push(
+                "Độ phủ xanh trong khung hình thấp — kiểm tra góc camera hoặc ánh sáng.",
+              );
+          }
+          if (!a.length)
+            a.push(
+              s
+                ? "Mọi thông số đang trong ngưỡng bình thường."
+                : "Đang chờ dữ liệu từ thiết bị…",
+            );
+          $("#adv").innerHTML = a.map((x) => `<li></li>`).join("");
+          [...$("#adv").children].forEach((li, i) => (li.textContent = a[i]));
+        }
+
+        /* ---------- Ảnh người phát hiện + thông báo có người ---------- */
+        const LS_PH = "igh.photos.v1";
+        let photos = [], lastSnap = 0;
+        try { photos = JSON.parse(localStorage.getItem(LS_PH) || "[]"); } catch (e) {}
+        if (!Array.isArray(photos)) photos = [];
+        function saveList(key, arr) {
+          const c = arr.slice();
+          while (c.length) {
+            try { localStorage.setItem(key, JSON.stringify(c)); return; } catch (e) { c.pop(); }
+          }
+        }
+        function twoClick(btn, label, fn) {
+          let t = null;
+          btn.onclick = () => {
+            if (t) { clearTimeout(t); t = null; btn.textContent = label; fn(); return; }
+            btn.textContent = "Bấm lần nữa để xóa";
+            t = setTimeout(() => { t = null; btn.textContent = label; }, 3000);
+          };
+        }
+        function grab(W, q) {
+          if (!cam.on || !cam.el) return null;
+          const w = cam.el.videoWidth || cam.el.naturalWidth, h = cam.el.videoHeight || cam.el.naturalHeight;
+          if (!w || !h) return null;
+          const Hh = Math.round((W * h) / w), c = document.createElement("canvas");
+          c.width = W; c.height = Hh;
+          const x = c.getContext("2d");
+          x.drawImage(cam.el, 0, 0, W, Hh);
+          const t = new Date().toLocaleString("vi-VN");
+          x.font = "11px sans-serif";
+          x.fillStyle = "#000a"; x.fillRect(0, Hh - 16, x.measureText(t).width + 8, 16);
+          x.fillStyle = "#fff"; x.fillText(t, 4, Hh - 4);
+          try { return c.toDataURL("image/jpeg", q); } catch (e) { return null; }
+        }
+        function snap(label, tone, force) {
+          const now = Date.now();
+          if (!force && now - lastSnap < 5000) return;
+          const img = grab(320, 0.6);
+          if (!img) return;
+          lastSnap = now;
+          photos.unshift({ ts: now, label, tone: tone || "", img });
+          while (photos.length > 30) photos.pop();
+          saveList(LS_PH, photos);
+          renderGallery();
+        }
+        function renderGallery() {
+          const g = $("#gal");
+          g.innerHTML = "";
+          $("#phInfo").textContent = photos.length
+            ? `${photos.length} ảnh (tự chụp khi camera thấy người)`
+            : "Chưa có ảnh. Bật camera, ảnh sẽ tự được chụp khi có người xuất hiện";
+          photos.forEach((p) => {
+            const d = document.createElement("div");
+            d.className = "shot " + (p.tone || "");
+            d.innerHTML = '<img alt=""><div><b></b><br><span class="muted"></span></div>';
+            d.querySelector("img").src = p.img;
+            d.querySelector("b").textContent = p.label;
+            d.querySelector(".muted").textContent = new Date(p.ts).toLocaleString("vi-VN");
+            d.onclick = () => {
+              $("#phBig").src = p.img;
+              $("#phCap").textContent = p.label + " · " + new Date(p.ts).toLocaleString("vi-VN");
+              $("#phDlg").showModal();
+            };
+            g.appendChild(d);
+          });
+        }
+        twoClick($("#phClear"), "Xóa ảnh", () => {
+          photos = [];
+          try { localStorage.removeItem(LS_PH); } catch (e) {}
+          renderGallery();
+        });
+        const peopleTxt = () => (!cam.on ? "" : cam.persons ? ` · Camera thấy ${cam.persons} người` : " · Camera chưa thấy người");
+        // Banner + dòng "Cửa" luôn phản ánh: cửa đang mở? có bao nhiêu người?
+        function showPeople() {
+          const b = $("#camAlert"), n = cam.persons, open = !!(st && (st.door === 1 || st.door === 2));
+          const parts = [];
+          if (open) parts.push("🚪 Cửa đang mở");
+          if (cam.on && n) parts.push(`👤 Có ${n} người trong khung hình`);
+          else if (open && cam.on) parts.push("⚠ CẢNH BÁO: không có người nhưng cửa mở");
+          b.hidden = !parts.length;
+          b.textContent = parts.join(" · ");
+          b.className = "banner " + (n || (open && cam.on) ? "bad" : "warn");
+          if (st) $("#doorTxt").textContent = "Cửa: " + (DOORTXT[st.door] || "—") + (cam.on ? " · " + n + " người" : "");
+        }
+        function eventHook(j) {
+          if (j.type === "door" && j.state === "open")
+            log(`Cửa mở ${j.by === "remote" ? "từ xa" : "bằng thẻ"}${peopleTxt()}`, "ok");
+          if (j.type === "door" && j.state === "open") {
+            clearTimeout(cam.doorT);
+            cam.doorT = setTimeout(doorNoPerson, 2500); // chờ 2,5 giây cho camera kịp nhận diện
+          }
+          if (j.type === "door") showPeople();
+        }
+        function doorNoPerson() {
+          if (!cam.on || cam.persons || !(st && (st.door === 1 || st.door === 2))) return;
+          snap("Cửa mở nhưng không có người", "bad", true);
+          toast("error", "Cửa mở nhưng không có người", "Camera không thấy ai trước cửa", 8000);
+          log("CẢNH BÁO: cửa mở nhưng không có người", "bad");
+        }
+        function extraOnTelemetry() { showPeople(); }
+        renderGallery();
+
+        /* ---------- Biểu đồ lịch sử ---------- */
+        function drawChart() {
+          const c = $("#chart"),
+            dpr = window.devicePixelRatio || 1,
+            W = c.clientWidth,
+            Hh = c.clientHeight;
+          if (!W) return;
+          c.width = W * dpr;
+          c.height = Hh * dpr;
+          const x = c.getContext("2d");
+          x.setTransform(dpr, 0, 0, dpr, 0, 0);
+          x.clearRect(0, 0, W, Hh);
+          const range = +$("#rng").value,
+            now = Date.now();
+          const data = H().filter((d) => !range || now - d.ts <= range * 60000);
+          const L = 38,
+            R = 38,
+            T = 10,
+            B = 22,
+            w = W - L - R,
+            h = Hh - T - B;
+          x.font = "11px system-ui";
+          x.fillStyle = "#8fab98";
+          x.strokeStyle = "#e6e2d4";
+          x.lineWidth = 1;
+          if (data.length < 2) {
+            x.textAlign = "center";
+            x.fillText(
+              "Chưa đủ dữ liệu (lưu mỗi phút một điểm)",
+              W / 2,
+              Hh / 2,
+            );
+            return;
+          }
+          const temps = data.map((d) => d.t).filter((v) => v != null);
+          let tmin = Math.floor(Math.min(...temps, 20) - 1),
+            tmax = Math.ceil(Math.max(...temps, 35) + 1);
+          const t0 = data[0].ts,
+            t1 = data[data.length - 1].ts,
+            span = Math.max(1, t1 - t0);
+          const X = (ts) => L + ((ts - t0) / span) * w,
+            YT = (v) => T + h - ((v - tmin) / (tmax - tmin)) * h,
+            YS = (v) => T + h - (v / 100) * h;
+          for (let i = 0; i <= 4; i++) {
+            const y = T + (h * i) / 4;
+            x.beginPath();
+            x.moveTo(L, y);
+            x.lineTo(L + w, y);
+            x.stroke();
+            x.textAlign = "right";
+            x.fillStyle = "#fb923c";
+            x.fillText(
+              (tmax - ((tmax - tmin) * i) / 4).toFixed(0),
+              L - 5,
+              y + 4,
+            );
+            x.textAlign = "left";
+            x.fillStyle = "#60a5fa";
+            x.fillText(100 - 25 * i + "", L + w + 5, y + 4);
+          }
+          x.fillStyle = "#8fab98";
+          x.textAlign = "left";
+          x.fillText(
+            new Date(t0).toLocaleString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+              day: "2-digit",
+              month: "2-digit",
+            }),
+            L,
+            Hh - 6,
+          );
+          x.textAlign = "right";
+          x.fillText(
+            new Date(t1).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            L + w,
+            Hh - 6,
+          );
+          const line = (key, Y, col) => {
+            x.beginPath();
+            x.strokeStyle = col;
+            x.lineWidth = 2;
+            let pen = false;
+            for (const d of data) {
+              const v = d[key];
+              if (v == null) {
+                pen = false;
+                continue;
+              }
+              const px = X(d.ts),
+                py = Y(v);
+              if (!pen) {
+                x.moveTo(px, py);
+                pen = true;
+              } else x.lineTo(px, py);
+            }
+            x.stroke();
+          };
+          line("t", YT, "#fb923c");
+          line("soil", YS, "#60a5fa");
+        }
+
+        /* ---------- Camera + AI ---------- */
+        const cam = {
+          on: false,
+          el: null,
+          stream: null,
+          model: null,
+          loading: false,
+          aiOn: true,
+          prev: null,
+          prevGray: null,
+          gray: null,
+          timer: null,
+          motion: 0,
+          persons: 0,
+          lastAlert: 0,
+        };
+        const vid = $("#cam"),
+          img = $("#camImg"),
+          ov = $("#camOv"),
+          work = document.createElement("canvas"),
+          wctx = work.getContext("2d", { willReadFrequently: true });
+        const camMsg = (t) => {
+          const m = $("#camMsg");
+          m.textContent = t || "";
+          m.hidden = !t;
+        };
+        async function listCams() {
+          try {
+            const devs = (
+              await navigator.mediaDevices.enumerateDevices()
+            ).filter((d) => d.kind === "videoinput");
+            const sel = $("#camDev"),
+              cur = sel.value;
+            sel.innerHTML = "";
+            devs.forEach((d, i) => {
+              const o = document.createElement("option");
+              o.value = d.deviceId;
+              o.textContent = d.label || "Camera " + (i + 1);
+              sel.appendChild(o);
+            });
+            if (cur) sel.value = cur;
+          } catch (e) {}
+        }
+        function stopCam() {
+          cam.on = false;
+          clearTimeout(cam.timer);
+          if (cam.stream) {
+            cam.stream.getTracks().forEach((t) => t.stop());
+            cam.stream = null;
+          }
+          vid.srcObject = null;
+          img.removeAttribute("src");
+          vid.hidden = true;
+          img.hidden = true;
+          cam.prev = null;
+          cam.el = null;
+          clearOv();
+          $("#btnCam").textContent = "▶ Bật camera";
+          cam.persons = 0;
+          $("#vPersons").textContent = "0";
+          showPeople();
+          camMsg("Camera đang tắt.");
+        }
+        async function startCam() {
+          stopCam();
+          const src = $("#camSrc").value;
+          camMsg("Đang mở camera…");
+          try {
+            if (src === "url") {
+              const u = $("#camUrl").value.trim();
+              if (!u) {
+                camMsg("Nhập URL luồng MJPEG / ảnh");
+                return;
+              }
+              img.crossOrigin = "anonymous";
+              img.src = u;
+              img.hidden = false;
+              vid.hidden = true;
+              cam.el = img;
+              img.onerror = () => {
+                if (cam.on)
+                  camMsg(
+                    "Không tải được luồng từ URL (sai địa chỉ hoặc bị chặn mixed-content/CORS)",
+                  );
+              };
+            } else {
+              if (
+                !navigator.mediaDevices ||
+                !navigator.mediaDevices.getUserMedia
+              ) {
+                camMsg(
+                  "Trình duyệt không hỗ trợ webcam (cần HTTPS hoặc localhost).",
+                );
+                return;
+              }
+              const d = $("#camDev").value,
+                v = { width: { ideal: 640 }, height: { ideal: 480 } };
+              if (d) v.deviceId = { exact: d };
+              cam.stream = await navigator.mediaDevices.getUserMedia({
+                video: v,
+                audio: false,
+              });
+              vid.srcObject = cam.stream;
+              vid.hidden = false;
+              img.hidden = true;
+              await vid.play();
+              cam.el = vid;
+              await listCams();
+            }
+            cam.on = true;
+            $("#btnCam").textContent = "⏹ Tắt camera";
+            loadModel(); // tự tải mô hình nhận diện người
+            camMsg("");
+            camLoop();
+          } catch (e) {
+            stopCam();
+            camMsg("Không mở được camera: " + (e.message || e));
+          }
+        }
+        async function camLoop() {
+          if (!cam.on) return;
+          const el = cam.el, w = el.videoWidth || el.naturalWidth, h = el.videoHeight || el.naturalHeight;
+          if (w && h) {
+            $("#camWrap").style.aspectRatio = w + "/" + h;
+            if (cam.model) {
+              try { handlePreds(await cam.model.detect(el, 10), w, h); }
+              catch (e) { camMsg("Không phân tích được ảnh (CORS?): " + e.message); }
+            }
+          }
+          if (cam.on) cam.timer = setTimeout(camLoop, 300);
+        }
+        function clearOv() {
+          const c = ov.getContext("2d");
+          c.clearRect(0, 0, ov.width, ov.height);
+        }
+        function handlePreds(preds, w, h) {
+          ov.width = w; ov.height = h;
+          const c = ov.getContext("2d");
+          c.clearRect(0, 0, w, h);
+          c.lineWidth = Math.max(2, w / 240);
+          c.font = Math.max(12, Math.round(w / 40)) + "px sans-serif";
+          let n = 0;
+          for (const p of preds) {
+            if (p.class !== "person" || p.score < 0.5) continue;
+            n++;
+            const [x, y, bw, bh] = p.bbox, label = "Người " + Math.round(p.score * 100) + "%", fs = parseInt(c.font);
+            c.strokeStyle = "#f87171"; c.strokeRect(x, y, bw, bh);
+            c.fillStyle = "#f87171"; c.fillRect(x, Math.max(0, y - fs - 4), c.measureText(label).width + 8, fs + 4);
+            c.fillStyle = "#000"; c.fillText(label, x + 4, Math.max(fs, y - 5));
+          }
+          const prev = cam.persons;
+          cam.persons = n;
+          $("#vPersons").textContent = n;
+          if (n > prev) personAlert(n);
+          if (n > 0) clearTimeout(cam.lostT);
+          else if (prev > 0) {
+            clearTimeout(cam.lostT);
+            cam.lostT = setTimeout(() => {
+              if (cam.persons) return;
+              snap("Không còn người trong khung hình", "", true);
+              log("Không còn người trong khung hình");
+            }, 2000);
+          }
+          showPeople();
+        }
+        function personAlert(n) {
+          const now = Date.now();
+          const unauth = now - lastAuth > 60000 && !(st && st.door !== 0);
+          snap(`Phát hiện ${n} người`, unauth ? "bad" : "warn");
+          if (now - cam.lastAlert < 8000) return;
+          cam.lastAlert = now;
+          toast(unauth ? "error" : "info", `Có ${n} người trước cửa`,
+            unauth ? "Chưa quẹt thẻ/mở cửa hợp lệ trong 60 giây gần đây" : "Đã xác thực cửa", 5000);
+          log(`Phát hiện ${n} người` + (unauth ? " — chưa xác thực cửa" : " (đã xác thực cửa)"), unauth ? "bad" : "ok");
+        }
+        function loadScript(src) {
+          return new Promise((res, rej) => {
+            const s = document.createElement("script");
+            s.src = src;
+            s.onload = res;
+            s.onerror = () => rej(new Error("Không tải được " + src));
+            document.head.appendChild(s);
+          });
+        }
+        async function loadModel() {
+          if (cam.loading || cam.model) return;
+          cam.loading = true;
+          $("#aiState").textContent = "Đang tải mô hình…";
+          try {
+            if (!window.tf) await loadScript(TFJS);
+            if (!window.cocoSsd) await loadScript(COCO);
+            cam.model = await cocoSsd.load({ base: "lite_mobilenet_v2" });
+            $("#aiState").textContent = "Sẵn sàng (COCO-SSD lite, chạy cục bộ)";
+          } catch (e) {
+            $("#aiState").textContent = "Lỗi tải mô hình: " + e.message;
+            
+          } finally {
+            cam.loading = false;
+          }
+        }
+
+        /* ---------- Demo (mô phỏng firmware) ---------- */
+        const DEMO_PIN = "1234"; // chỉ dùng cho chế độ demo
+        const sim = {
+          t: 27,
+          soil: 55,
+          led: 0,
+          fan: 0,
+          pump: 0,
+          door: 0,
+          ovLed: -1,
+          ovFan: -1,
+          ovPump: -1,
+          stop: 0,
+          tl: 30,
+          so: 30,
+          sf: 40,
+          ps: 50,
+          fw: 0,
+          pw: 0,
+          lw: 0,
+          up: 0,
+          pr: 0,
+          raw: 2800,
+          ok: 1,
+          water: 80,
+          wlow: 0,
+        };
+        function simTick() {
+          sim.up += 2;
+          sim.t = clamp(
+            sim.t +
+              (Math.random() - 0.5) * 0.5 +
+              (sim.fan ? -0.4 : 0.08) +
+              (sim.led ? 0.1 : 0),
+            18,
+            40,
+          );
+          sim.soil = clamp(
+            sim.soil + (sim.pump ? (sim.ps / 100) * 4 : -0.5),
+            0,
+            100,
+          );
+          if (sim.t > sim.tl) sim.fw = 1;
+          else if (sim.t < sim.tl - 1) sim.fw = 0;
+          sim.lw = sim.t < sim.tl - 1 ? 1 : sim.t >= sim.tl ? 0 : sim.lw;
+          if (sim.soil < sim.so) sim.pw = 1;
+          else if (sim.soil > sim.sf) sim.pw = 0;
+          sim.led = sim.stop ? 0 : sim.ovLed >= 0 ? sim.ovLed : sim.lw;
+          sim.fan = sim.stop ? 0 : sim.ovFan >= 0 ? sim.ovFan : sim.fw;
+          const pw = sim.stop ? 0 : sim.ovPump >= 0 ? sim.ovPump : sim.pw;
+          if (pw) {
+            sim.pr += 2;
+            sim.pump = sim.pr < 60 ? 1 : 0;
+          } else {
+            sim.pr = 0;
+            sim.pump = 0;
+          }
+          sim.raw = Math.round(4095 - (sim.soil / 100) * 2595);
+          const wasLow = sim.wlow;
+          sim.water = clamp(sim.water - (sim.pump ? 1.2 : 0.05), 0, 100); // bơm chạy thì bể cạn dần
+          if (sim.water <= 30) sim.wlow = 1;
+          else if (sim.water >= 40) sim.wlow = 0;
+          if (sim.wlow && !wasLow)
+            onEvent({ type: "water", low: true, pct: Math.round(sim.water) });
+          onTelemetry({
+            t: +sim.t.toFixed(1),
+            soil: Math.round(sim.soil),
+            raw: sim.raw,
+            led: sim.led,
+            fan: sim.fan,
+            pump: sim.pump,
+            door: sim.door,
+            ovLed: sim.ovLed,
+            ovFan: sim.ovFan,
+            ovPump: sim.ovPump,
+            stop: sim.stop,
+            tl: sim.tl,
+            so: sim.so,
+            sf: sim.sf,
+            ps: sim.ps,
+            rssi: -58,
+            up: sim.up,
+            ok: 1,
+            water: Math.round(sim.water),
+            wraw: Math.round(sim.water * 20),
+            wlow: sim.wlow,
+          });
+        }
+        function simCmd(c) {
+          const ov = (v) => (v === "1" ? 1 : v === "0" ? 0 : -1);
+          if (c === "all:stop") {
+            sim.stop = 1;
+            sim.ovLed = sim.ovFan = sim.ovPump = -1;
+          } else if (c === "all:run") sim.stop = 0;
+          else if (c === "all:auto") {
+            sim.ovLed = sim.ovFan = sim.ovPump = -1;
+            sim.stop = 0;
+          } else if (c === "read") {
+            sim.water = 100;
+            sim.wlow = 0;
+            log("Demo: đã cấp đầy nước cho bể (bấm “Đo ngay”)", "ok");
+          } else if (c.startsWith("led:")) sim.ovLed = ov(c.slice(4));
+          else if (c.startsWith("fan:")) sim.ovFan = ov(c.slice(4));
+          else if (c.startsWith("pump:")) {
+            sim.ovPump = ov(c.slice(5));
+            sim.pr = 0;
+          } else if (c.startsWith("door:open")) {
+            if (c.slice(10) !== DEMO_PIN) {
+              onEvent({ type: "pin_denied" });
+              return;
+            }
+            if (sim.door !== 0) {
+              onEvent({ type: "door_busy" });
+              return;
+            }
+            sim.door = 1;
+            lastAuth = Date.now();
+            setTimeout(() => {
+              sim.door = 2;
+              onEvent({ type: "door", state: "open", by: "remote" });
+            }, 300);
+            setTimeout(() => (sim.door = 3), 5300);
+            setTimeout(() => {
+              sim.door = 0;
+              onEvent({ type: "door", state: "closed" });
+            }, 6300);
+          } else if (c.startsWith("cfg:")) {
+            const [k, v] = c.slice(4).split("=");
+            const n = parseInt(v, 10);
+            if (k === "temp" && n >= 10 && n <= 50) sim.tl = n;
+            else if (k === "soilon" && n >= 0 && n <= 100) sim.so = n;
+            else if (k === "soiloff" && n >= 0 && n <= 100) sim.sf = n;
+            else if (k === "pump" && n >= 20 && n <= 100) sim.ps = n;
+          }
+          simTick();
+        }
+        function setDemo(on) {
+          demo = on;
+          $("#btnDemo").classList.toggle("on", on);
+          $("#btnDemo").textContent = on ? "Thoát demo" : "Chế độ demo";
+          clearInterval(simTimer);
+          st = null;
+          lastTs = 0;
+          if (on) {
+            if (client) {
+              try {
+                client.end(true);
+              } catch (e) {}
+              client = null;
+            }
+            chip("#chBroker", "warn", "Broker: (demo)");
+            devOnline = true;
+            log("Bật chế độ demo — dữ liệu mô phỏng", "cmd");
+            simTick();
+            simTimer = setInterval(simTick, 2000);
+          } else {
+            devOnline = false;
+            histDemo = [];
+            connect();
+          }
+          render();
+          drawChart();
+        }
+
+        /* ---------- Sự kiện giao diện ---------- */
+        document.addEventListener("click", (e) => {
+          const b = e.target.closest("[data-cmd]");
+          if (b && !b.disabled) send(b.dataset.cmd, b.dataset.label);
+        });
+        let doorWait = null;
+        $("#btnDoor").onclick = () => {
+          $("#doorPin").value = "";
+          $("#doorErr").textContent = "";
+          $("#doorDlg").showModal();
+          setTimeout(() => $("#doorPin").focus(), 50);
+        };
+        $("#doorCancel").onclick = () => {
+          $("#doorPin").value = "";
+          $("#doorDlg").close();
+        };
+        $("#doorFrm").onsubmit = (e) => {
+          e.preventDefault();
+          const pin = $("#doorPin").value.trim();
+          if (!pin) {
+            $("#doorErr").textContent = "Vui lòng nhập mã PIN";
+            $("#doorPin").focus();
+            return;
+          }
+          $("#doorPin").value = ""; // xóa PIN khỏi ô nhập ngay sau khi gửi
+          $("#doorDlg").close();
+          if (!send("door:open:" + pin, "Mở cửa từ xa")) {
+            toast("error", "Không gửi được lệnh", "Chưa kết nối tới broker");
+            return;
+          }
+          toast(
+            "info",
+            "Đã gửi lệnh mở cửa",
+            "Đang chờ thiết bị phản hồi…",
+            3000,
+          );
+          clearTimeout(doorWait);
+          doorWait = setTimeout(
+            () =>
+              toast(
+                "warn",
+                "Thiết bị chưa phản hồi",
+                "Kiểm tra ESP32 có online không rồi thử lại",
+                6000,
+              ),
+            8000,
+          );
+        };
+        $("#btnApply").onclick = () => {
+          const v = (id) => $(id).value;
+          if (+v("#inOff") <= +v("#inOn")) {
+            log("Ngưỡng tắt bơm phải lớn hơn ngưỡng bật", "bad");
+            return;
+          }
+          [
+            [`cfg:temp=${v("#inTemp")}`, `Đã chỉnh ngưỡng quạt: ${v("#inTemp")}°C`],
+            [`cfg:soilon=${v("#inOn")}`, `Đã chỉnh ngưỡng bật máy bơm: ${v("#inOn")}%`],
+            [`cfg:soiloff=${v("#inOff")}`, `Đã chỉnh ngưỡng tắt máy bơm: ${v("#inOff")}%`],
+            [`cfg:pump=${v("#inPump")}`, `Đã chỉnh công suất máy bơm: ${v("#inPump")}%`],
+          ].forEach(([cmd, label], i) =>
+            setTimeout(() => send(cmd, label), i * 250),
+          );
+        };
+        $("#btnDemo").onclick = () => setDemo(!demo);
+        $("#rng").onchange = drawChart;
+        $("#btnClear").onclick = () => {
+          if (!confirm("Xóa toàn bộ lịch sử đã lưu?")) return;
+          hist.length = 0;
+          histDemo.length = 0;
+          try {
+            localStorage.removeItem(LS_HIST);
+          } catch (e) {}
+          drawChart();
+        };
+        window.addEventListener("resize", () => {
+          drawChart();
+        });
+
+        const dlg = $("#dlg");
+        function fillSnippet() {
+          $("#snippet").textContent =
+            `const char* TOPIC_PREFIX  = "${$("#cPrefix").value.trim()}";`;
+        }
+        function openSettings() {
+          $("#cBroker").value = cfg.broker;
+          $("#cPrefix").value = cfg.prefix;
+          fillSnippet();
+          dlg.showModal();
+        }
+        $("#btnSet").onclick = openSettings;
+        $("#btnCancel").onclick = () => dlg.close();
+        $("#cPrefix").oninput = fillSnippet;
+        $("#btnCopy").onclick = async () => {
+          try {
+            await navigator.clipboard.writeText($("#snippet").textContent);
+            $("#btnCopy").textContent = "Đã chép ✓";
+          } catch (e) {
+            $("#btnCopy").textContent = "Hãy chép thủ công";
+          }
+          setTimeout(() => ($("#btnCopy").textContent = "Sao chép"), 1500);
+        };
+        $("#frm").onsubmit = () => {
+          cfg.broker = $("#cBroker").value.trim() || cfg.broker;
+          cfg.prefix =
+            $("#cPrefix")
+              .value.trim()
+              .replace(/^\/+|\/+$/g, "") || cfg.prefix;
+          saveCfg();
+          st = null;
+          devOnline = false;
+          lastTs = 0;
+          if (!demo) connect();
+          render();
+        };
+
+        $("#camSrc").onchange = () => {
+          const u = $("#camSrc").value === "url";
+          $("#camUrl").hidden = !u;
+          $("#camDev").hidden = u;
+        };
+        $("#btnCam").onclick = () => (cam.on ? stopCam() : startCam());
+                
+        /* ---------- Khởi động ---------- */
+        $("#camDev").innerHTML = '<option value="">Camera mặc định</option>';
+        render();
+        drawChart();
+        connect();
+        setInterval(() => {
+          if (lastTs)
+            $("#chLast span").textContent =
+              "Cập nhật: " +
+              Math.round((Date.now() - lastTs) / 1000) +
+              " giây trước";
+        }, 1000);
+        if (firstRun) openSettings();
+      })();
+    </script>
+  </body>
+</html>
